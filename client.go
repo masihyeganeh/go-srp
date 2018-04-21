@@ -12,6 +12,7 @@ type SRPClient struct {
 	Multiplier *big.Int
 	A          *big.Int
 	X          *big.Int
+	I          []byte
 	M1         []byte
 	M2         []byte
 	K          []byte
@@ -32,6 +33,8 @@ func NewClient(params *SRPParams, salt, identity, password, secret1 []byte) *SRP
 		Secret1:    secret1Int,
 		A:          A,
 		X:          x,
+		I:          identity,
+		s:          intFromBytes(salt),
 	}
 }
 
@@ -55,7 +58,7 @@ func (c *SRPClient) SetB(Bb []byte) {
 	S := clientGetS(c.Params, c.Multiplier, c.X, c.Secret1, B, u)
 
 	c.K = getK(c.Params, S)
-	c.M1 = getM1(c.Params, intToBytes(c.A), Bb, S)
+	c.M1 = getM1(c.Params, c.I, intToBytes(c.s), intToBytes(c.A), Bb, c.K)
 	c.M2 = getM2(c.Params, intToBytes(c.A), c.M1, c.K)
 
 	c.u = u               // Only for tests

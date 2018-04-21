@@ -57,7 +57,7 @@ func TestUseAAndB(t *testing.T) {
 	A := client.ComputeA()
 
 	// Create server
-	server := NewServer(params, getVerifier(), b)
+	server := NewServer(params, salt, identity, getVerifier(), b)
 
 	// Server produces B
 	B := server.ComputeB()
@@ -93,7 +93,7 @@ func TestServerRejectsWrongM1(t *testing.T) {
 	a, b := getAAndB()
 	params := GetParams(4096)
 	badClient := NewClient(params, salt, identity, []byte("Bad"), a)
-	server := NewServer(params, getVerifier(), b)
+	server := NewServer(params, salt, identity, getVerifier(), b)
 	badClient.SetB(server.ComputeB())
 	_, err := server.CheckM1(badClient.ComputeM1())
 	assert.EqualError(t, err, "Client did not use the same password", "M1 check should have failed")
@@ -106,7 +106,7 @@ func TestServerRejectsBadA(t *testing.T) {
 
 	_, b := getAAndB()
 	params := GetParams(4096)
-	server := NewServer(params, getVerifier(), b)
+	server := NewServer(params, salt, identity, getVerifier(), b)
 
 	assert.Panics(t, func() {
 		server.SetA(intToBytes(big.NewInt(0)))
@@ -153,7 +153,7 @@ func TestClientRejectsBadM2(t *testing.T) {
 	A := client.ComputeA()
 
 	// Create server
-	server := NewServer(params, getVerifier(), b)
+	server := NewServer(params, salt, identity, getVerifier(), b)
 
 	// Server produced B
 	B := server.ComputeB()
@@ -233,7 +233,7 @@ func TestRFC5054(t *testing.T) {
 	assert.Equal(t, AExpected, client.ComputeA(), "A should match")
 
 	// B
-	server := NewServer(params, verifier, b)
+	server := NewServer(params, salt, identity, verifier, b)
 	assert.Equal(t, BExpected, server.ComputeB(), "B should match")
 
 	// u and S client

@@ -11,6 +11,7 @@ type SRPServer struct {
 	Verifier *big.Int
 	Secret2  *big.Int
 	B        *big.Int
+	I        []byte
 	M1       []byte
 	M2       []byte
 	K        []byte
@@ -18,7 +19,7 @@ type SRPServer struct {
 	s        *big.Int
 }
 
-func NewServer(params *SRPParams, Vb []byte, S2b []byte) *SRPServer {
+func NewServer(params *SRPParams, salt, identity, Vb , S2b []byte) *SRPServer {
 	multiplier := getMultiplier(params)
 	V := intFromBytes(Vb)
 	secret2 := intFromBytes(S2b)
@@ -31,6 +32,8 @@ func NewServer(params *SRPParams, Vb []byte, S2b []byte) *SRPServer {
 		Secret2:  secret2,
 		Verifier: V,
 		B:        B,
+		I:        identity,
+		s:        intFromBytes(salt),
 	}
 }
 
@@ -44,7 +47,7 @@ func (s *SRPServer) SetA(A []byte) {
 	S := serverGetS(s.Params, s.Verifier, AInt, s.Secret2, U)
 
 	s.K = getK(s.Params, S)
-	s.M1 = getM1(s.Params, A, intToBytes(s.B), S)
+	s.M1 = getM1(s.Params, s.I, intToBytes(s.s), A, intToBytes(s.B), s.K)
 	s.M2 = getM2(s.Params, A, s.M1, s.K)
 
 	s.u = U               // only for tests

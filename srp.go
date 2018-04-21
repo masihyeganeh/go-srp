@@ -73,11 +73,30 @@ func getu(params *SRPParams, A, B *big.Int) *big.Int {
 	return hashToInt(hashU)
 }
 
-func getM1(params *SRPParams, A, B, S []byte) []byte {
+func getM1(params *SRPParams, I, s, A, B, K []byte) []byte {
+	hashTemp := params.Hash.New()
+	hashTemp.Write(padToN(params.N, params))
+	hashN := hashToBytes(hashTemp)
+
+	hashTemp = params.Hash.New()
+	hashTemp.Write(padToN(params.G, params))
+	hashG := hashToBytes(hashTemp)
+
+	HNxorg := make([]byte, len(hashN))
+	for i := 0; i < len(HNxorg); i++ {
+		HNxorg[i] = hashN[i] ^ hashG[i]
+	}
+
+	hashTemp = params.Hash.New()
+	hashTemp.Write(I)
+
 	hashM1 := params.Hash.New()
+	hashM1.Write(HNxorg)
+	hashM1.Write(hashToBytes(hashTemp))
+	hashM1.Write(s)
 	hashM1.Write(A)
 	hashM1.Write(B)
-	hashM1.Write(S)
+	hashM1.Write(K)
 	return hashToBytes(hashM1)
 }
 
